@@ -1,0 +1,8 @@
+I would implement first:
+The ingestion and staging step that loads the latest CRM file and API data into staging tables.
+Without this nothing else can work.
+I would postpone:
+Complex transformations
+Derived metrics
+Performance optimisation
+Data quality checks
