@@ -1,1 +1,39 @@
+Q 2.1
+Three optimization changes :
+As I have only 30 minutes to make adjustments, I would do :
+1- Improve SQL Logic :
+The original data retrieves all the fact table data and aggregates it; we can improve it by specifying a date range. e.g. past week
 
+SELECT company_id, date, SUM(events) AS events
+FROM fact_events
+WHERE date >= DATEADD(day, -7, CAST(GETDATE() AS date))
+GROUP BY company_id, date;
+
+2- Add proper indexes on the fact table on (company_id, date), as its impact on the performance for retrieving data makes it much faster.
+3- Partition the Table by date. Partitioning is a huge boost for performance as it can retrieve the data based on the date more quickly.
+   It might take more than 30 min based on the data to be implemented, but it's a quick solution to do at this time for later.
+
+
+Q2.2 
+risks or flaws in the Query 
+1- Ambiguous date column as it does not show which date this column relates to, the event date, or the company date ?? so nothing specific 
+   It should be replaced with proper naming, like event_date in the database or at least use an alias.
+2- There is no filtering or validation on the query, so we can add filtering to get the data after a specific date and validate it 
+   WHERE event_date >= '2026-01-01' AND events >= 0
+
+Q2.3
+One real pipeline performance issue I have faced:
+After a while of implementing our ETL solution for a DWH, I have found that some records on the source data that have been deleted are still showing in the DWH as a record not flagged as deleted 
+I noticed immediately that the problem with the deleting method for reading deleted records was that I had designed it to catch hard deleted records, but the case was that it was soft deleted at the source, "Flagged."
+Before anything, I have got a backup of the latest version of this DWH to make sure any modification will not harm the DWH until validating it.
+I have modified the solution, then I re-executed the package, and it worked perfectly. "The data was not that big and was in a local server, so this solution got it."
+
+Q2.4 
+What’s changing:
+  - Only pulling recent dates from fact_events, so it runs faster.
+  - Adding indexes on company_id and date.
+  - Planning date-based partitioning later for even faster queries.
+Heads up:
+  - Old data won’t show based on the query adjustment.
+Watch out for:
+- Totals might look a bit lower than the full dataset for now.
